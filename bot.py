@@ -98,7 +98,7 @@ def welcome_group_addition(update, context):
     new_members = update.message.new_chat_members
     for member in new_members:
         if(member.id==bot_id):
-            context.bot.send_message(chat_id=update.effective_chat.id, text="Hi! You just added the Unscramble Game bot to your group. \n\nTo start a game, use the /startGame command and join the game using the join button.\n\nBy continuing to use this bot, you are agreeing to the /terms of service. Enjoy!")
+            context.bot.send_message(chat_id=update.effective_chat.id, text="Hi! You just added the Ultimate Unscramble Game bot to your group. \n\nTo start a game, just use the /startGame command and start solving!\n\nBy continuing to use this bot, you are agreeing to the /terms of service. Enjoy!")
             
 
 def checkGroupAddition(update, context):
