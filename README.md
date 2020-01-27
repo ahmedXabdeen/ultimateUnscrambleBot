@@ -1,7 +1,7 @@
 
 # Ultimate Unscramble Bot
 
-[See the bot on Telegram](https://t.me/ultimateUnscrambleBot)
+[Experience the bot on Telegram](https://t.me/ultimateUnscrambleBot)
 
 An alternative telegram bot for playing competitive unscramble games in groups. 
 
