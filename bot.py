@@ -48,7 +48,7 @@ def gameEnder(update, context, timer=False):
         update.message.reply_text("There's no active game, start one with /startGame")
         return
     if user["id"] not in games[chat_id]["players"] and not timer:
-        update.message.reply_text("sthu you ain't even playin...")
+        update.message.reply_text("Sthu you ain't even playin...")
         return
     games[chat_id]["active"] = False
     timers = games[chat_id]["gameEndTimers"]
@@ -140,7 +140,7 @@ def extendGameTime(update, context):
                 ]
         games[chat_id]["gameEndTimers"][0].start()
     else:
-        update.message.reply_text("sthu you ain't even playin...")
+        update.message.reply_text("Sthu you ain't even playin...")
      
 def gameStarter(update, context):
     chat_id = update.message.chat_id
