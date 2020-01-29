@@ -69,6 +69,10 @@ def gameEnder(update, context, timer=False):
             message = f'The Winner is [{winner[1]["data"]["first_name"]} {winner[1]["data"]["last_name"] or ""}](tg://user?id={winner[1]["data"]["id"]})\nscore: {winner[1]["score"]}\n\nPlayers:\n'
         for item in players:
             message += f'{item[1]["data"]["first_name"]} {item[1]["data"]["last_name"] or ""}: {item[1]["score"]}\n'
+
+        elapsed_time = time.time() - games[chat_id]["start_time"]
+        duration = time.strftime("%H:%M:%S", time.gmtime(elapsed_time))
+        message += f"\nGame duration: {duration}"
         update.message.reply_markdown(message)
     else:
         update.message.reply_text('What a shame! Nobody played in this game...')
@@ -168,6 +172,7 @@ def startGame(update, context):
             "solved": True, 
             "active": False, 
             "players": {},
+            "start_time": time.time()
         }
         gameStarter(update,context)
 
