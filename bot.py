@@ -78,13 +78,16 @@ def gameEnder(update, context, timer=False):
         update.message.reply_text('What a shame! Nobody played in this game...')
     del games[chat_id]
 
-def wordTimeOut(update, context):
+def wordTimeOut(update, context, solve=False):
     chat_id = update.message.chat_id
     games[chat_id]["solved"] = True
-    context.bot.send_message(chat_id=update.effective_chat.id, text=f'The correct word is {games[chat_id]["correct"]}')
-    return setAndSendWord(update, context)
+    if solve:
+        update.message.reply_text(f'The correct word is {games[chat_id]["correct"]}')
+    else:
+        context.bot.send_message(chat_id=update.effective_chat.id, text=f'The correct word is {games[chat_id]["correct"]}')
+    return setAndSendWord(update, context, free=solve)
 
-def setAndSendWord(update, context):
+def setAndSendWord(update, context, free=False):
     chat_id = update.message.chat_id
     if games[chat_id]["solved"] and games[chat_id]["active"]:
         new_w = list(random.choice(words))
@@ -95,8 +98,9 @@ def setAndSendWord(update, context):
         context.bot.send_message(chat_id=update.effective_chat.id, text=f"The word to solve is: \n{games[chat_id]['current']}")
 
         games[chat_id]["solved"] = False
-        games[chat_id]["timer"] = threading.Timer(25.0, wordTimeOut, args=(update,context))
-        games[chat_id]["timer"].start()
+        if not free:
+            games[chat_id]["timer"] = threading.Timer(25.0, wordTimeOut, args=(update,context))
+            games[chat_id]["timer"].start()
 
 def welcome_group_addition(update, context):
     new_members = update.message.new_chat_members
@@ -111,6 +115,7 @@ def checkGroupAddition(update, context):
 
 def checkSolution(update, context):
     chat_id = update.message.chat_id
+    free = games[chat_id]["mode"] == "free"
     if chat_id in games and games[chat_id]["active"]:
         solution = update.message.text.strip().split()[0]
         user = update.message.from_user
@@ -121,7 +126,7 @@ def checkSolution(update, context):
             if user["id"] not in games[chat_id]["players"]:
                 games[chat_id]["players"][user['id']] = {"score":0, "data":user}
             games[chat_id]["players"][user["id"]]["score"] += 1
-            return setAndSendWord(update, context)
+            return setAndSendWord(update, context, free)
 
 def extendGameTime(update, context):
     chat_id = update.message.chat_id
@@ -146,7 +151,7 @@ def extendGameTime(update, context):
     else:
         update.message.reply_text("STHU you ain't even playin...")
      
-def gameStarter(update, context):
+def gameStarter(update, context, free=False):
     chat_id = update.message.chat_id
     games[update.message.chat_id]["active"] = True
     games[update.message.chat_id]["gameEndTimers"] = [
@@ -158,7 +163,7 @@ def gameStarter(update, context):
             ]
     games[chat_id]["gameEndTimers"][0].start()
     update.message.reply_text('Starting game... Buckle Up!\n\nGame duration is 3 minutes, you can always /extend game time tho')
-    return setAndSendWord(update, context)
+    return setAndSendWord(update, context, free)
 
 
 def startGame(update, context):
@@ -167,6 +172,7 @@ def startGame(update, context):
 
     if chat_id not in games:
         games[chat_id] = {
+            "mode": "normal",
             "current": "", 
             "correct": "", 
             "solved": True, 
@@ -176,6 +182,28 @@ def startGame(update, context):
         }
         gameStarter(update,context)
 
+def startFreeGame(update, context):
+    chat_id = update.message.chat_id
+    if chat_id not in games:
+        games[chat_id] = {
+            "mode": "free",
+            "current": "", 
+            "correct": "", 
+            "solved": True, 
+            "active": False, 
+            "players": {},
+            "start_time": time.time()
+        }
+        gameStarter(update, context, free=True)
+
+def solve(update, context):
+    chat_id = update.message.chat_id
+
+    if chat_id in games and games[chat_id]["mode"] == "free":
+        wordTimeOut(update, context, solve=True)
+
+
+
 def terms(update, context):
     context.bot.send_message(chat_id=update.effective_chat.id, parse_mode='markdown', text='*Terms of Service:* \n\nI hereby agree to send @ahmedXabdeen a bag of homemade cookies whenever he asks for them.')
 
@@ -184,12 +212,16 @@ terms_handler = CommandHandler('terms', terms)
 end_handler = CommandHandler('end', gameEnder)
 players_handler = CommandHandler('players', players)
 startGame_handler = CommandHandler('startGame', startGame)
+startFreeGame_handler = CommandHandler('startFreeGame', startFreeGame)
 extendGameTime_handler = CommandHandler('extend', extendGameTime)
+solve_handler = CommandHandler('solve', solve)
 dispatcher.add_handler(start_handler)
 dispatcher.add_handler(terms_handler)
 dispatcher.add_handler(end_handler)
 dispatcher.add_handler(players_handler)
 dispatcher.add_handler(startGame_handler)
+dispatcher.add_handler(startFreeGame_handler)
+dispatcher.add_handler(solve_handler)
 dispatcher.add_handler(extendGameTime_handler)
 dispatcher.add_handler(MessageHandler(Filters.text, checkSolution))
 dispatcher.add_handler(MessageHandler(Filters.status_update.new_chat_members, checkGroupAddition), group=9)
