@@ -44,6 +44,7 @@ def sendEndTimer(update, context, remaining, index):
 def gameEnder(update, context, timer=False):
     chat_id = update.message.chat_id
     user = update.message.from_user
+    free = games[chat_id]["mode"] == "free"
     if chat_id not in games:
         update.message.reply_text("There's no active game, start one with /startGame")
         return
@@ -56,7 +57,8 @@ def gameEnder(update, context, timer=False):
         if(hasattr(item, 'cancel')):
             item.cancel()
     context.bot.send_message(chat_id=update.effective_chat.id, text=f'The correct word is {games[chat_id]["correct"]}')
-    games[chat_id]["timer"].cancel()
+    if not free:
+        games[chat_id]["timer"].cancel()
     players = games[chat_id]["players"]
     context.bot.send_message(chat_id=chat_id, text="Ending this game session, calculating scores...")
     finalPlayers = {k: v for k, v in sorted(players.items(), key=lambda item: item[1]['score'], reverse=True)}
@@ -121,7 +123,8 @@ def checkSolution(update, context):
         user = update.message.from_user
         if(not games[chat_id]["solved"] and solution.lower()==games[chat_id]["correct"].lower()):
             games[chat_id]["solved"] = True
-            games[chat_id]["timer"].cancel()
+            if not free:
+                games[chat_id]["timer"].cancel()
             update.message.reply_markdown(f'[{user["first_name"]} {user["last_name"] or ""}](tg://user?id={user["id"]})  solved the word 🥳🥳')
             if user["id"] not in games[chat_id]["players"]:
                 games[chat_id]["players"][user['id']] = {"score":0, "data":user}
