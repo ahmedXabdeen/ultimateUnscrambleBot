@@ -172,6 +172,7 @@ def gameStarter(update, context, free=False):
 def startGame(update, context):
 
     chat_id = update.message.chat_id
+    user = update.message.from_user
 
     if chat_id not in games:
         games[chat_id] = {
@@ -183,6 +184,8 @@ def startGame(update, context):
             "players": {},
             "start_time": time.time()
         }
+        # add whoever it's who started the game to players 
+        games[chat_id]["players"][user['id']] = {"score":0, "data":user}
         gameStarter(update,context)
 
 def startFreeGame(update, context):
