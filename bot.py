@@ -80,6 +80,64 @@ def gameEnder(update, context, timer=False):
         update.message.reply_text('What a shame! Nobody played in this game...')
     del games[chat_id]
 
+def pauseGame(update, context):
+    chat_id = update.message.chat_id
+    user = update.message.from_user
+    free = games[chat_id]["mode"] == "free"
+    if chat_id not in games:
+        update.message.reply_text("There's no active game, start one with /startGame")
+        return
+    if user["id"] not in games[chat_id]["players"] and not timer:
+        update.message.reply_text("STHU you ain't even playin...")
+        return
+
+    # set game status to NOT active
+    games[chat_id]["active"] = False
+
+    # cancel game end timers 
+    timers = games[chat_id]["gameEndTimers"]
+    for item in timers:
+        if(hasattr(item, 'cancel')):
+            item.cancel()
+
+    # solving the word
+    context.bot.send_message(chat_id=update.effective_chat.id, text=f'The correct word is {games[chat_id]["correct"]}')
+    games[chat_id]["solved"] = True
+
+    # cancelling the word time out timer
+    if not free:
+        games[chat_id]["timer"].cancel()
+
+    # note call setAndSendWord() on resume 
+
+def resumeGame(update, context):
+    chat_id = update.message.chat_id
+    user = update.message.from_user
+    free = games[chat_id]["mode"] == "free"
+
+    # check if user is permitted to resume
+    if user["id"] not in games[chat_id]["players"] and not timer:
+        update.message.reply_text("STHU you ain't even playin...")
+        return
+
+    # change game status to active
+    games[chat_id]["active"] = True
+
+    # call setAndSendWord(), that automatically sets the word time out timers
+    setAndSendWord(update, context, free)
+    
+    # set game end timers
+    games[update.message.chat_id]["gameEndTimers"] = [
+                threading.Timer(60, sendEndTimer, args=(update,context,'two minutes',0)),
+                threading.Timer(60, sendEndTimer, args=(update,context, 'one minute', 1)),
+                threading.Timer(30, sendEndTimer, args=(update,context, '30 seconds', 2)),
+                threading.Timer(20, sendEndTimer, args=(update,context, '10 seconds', 3)),
+                threading.Timer(10, gameEnder, args=(update,context, True)),
+            ]
+    games[chat_id]["gameEndTimers"][0].start()
+    
+
+
 def wordTimeOut(update, context, solve=False):
     chat_id = update.message.chat_id
     games[chat_id]["solved"] = True
@@ -221,6 +279,8 @@ startGame_handler = CommandHandler('startGame', startGame)
 startFreeGame_handler = CommandHandler('startFreeGame', startFreeGame)
 extendGameTime_handler = CommandHandler('extend', extendGameTime)
 solve_handler = CommandHandler('solve', solve)
+pauseGame_handler = CommandHandler('pause', pauseGame)
+resumeGame_handler = CommandHandler('resume', resumeGame)
 dispatcher.add_handler(start_handler)
 dispatcher.add_handler(terms_handler)
 dispatcher.add_handler(end_handler)
@@ -229,6 +289,8 @@ dispatcher.add_handler(startGame_handler)
 dispatcher.add_handler(startFreeGame_handler)
 dispatcher.add_handler(solve_handler)
 dispatcher.add_handler(extendGameTime_handler)
+dispatcher.add_handler(pauseGame_handler)
+dispatcher.add_handler(resumeGame_handler)
 dispatcher.add_handler(MessageHandler(Filters.text, checkSolution))
 dispatcher.add_handler(MessageHandler(Filters.status_update.new_chat_members, checkGroupAddition), group=9)
 
