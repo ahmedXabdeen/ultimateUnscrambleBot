@@ -128,9 +128,10 @@ def resumeGame(update, context):
         update.message.reply_text("STHU you ain't even playin...")
         return
 
-    # change game status to active
+    # change game status to active and resuming game
     games[chat_id]["active"] = True
-
+    update.message.reply_text("Resuming game...")
+    
     if games[chat_id]["solved"]:
         # the timer has ended before pausing the game
         # call setAndSendWord(), that automatically sets the word time out timers
@@ -154,7 +155,6 @@ def resumeGame(update, context):
             ]
     games[chat_id]["gameEndTimers"][0].start()
 
-    update.message.reply_text("Resuming game...")
     
 
 
