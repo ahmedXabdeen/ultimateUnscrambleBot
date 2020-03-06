@@ -83,10 +83,10 @@ def gameEnder(update, context, timer=False):
 def pauseGame(update, context):
     chat_id = update.message.chat_id
     user = update.message.from_user
-    free = games[chat_id]["mode"] == "free"
     if chat_id not in games:
         update.message.reply_text("There's no active game, start one with /startGame")
         return
+    free = games[chat_id]["mode"] == "free"
     if user["id"] not in games[chat_id]["players"]:
         update.message.reply_text("STHU you ain't even playin...")
         return
@@ -122,6 +122,7 @@ def resumeGame(update, context):
     
     if chat_id in games and games[chat_id]["active"]:
         update.message.reply_text("Your game session is not paused. You can /pause it, and /resume it later when you're ready.")
+        return
 
     # check if user is permitted to resume
     if user["id"] not in games[chat_id]["players"]:
@@ -131,7 +132,7 @@ def resumeGame(update, context):
     # change game status to active and resuming game
     games[chat_id]["active"] = True
     update.message.reply_text("Resuming game...")
-    
+
     if games[chat_id]["solved"]:
         # the timer has ended before pausing the game
         # call setAndSendWord(), that automatically sets the word time out timers
