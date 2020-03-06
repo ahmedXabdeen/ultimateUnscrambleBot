@@ -5,7 +5,7 @@ import os
 
 
 TOKEN = os.environ['TOKEN']
-bot_id = TOKEN=os.environ['BOTID']
+bot_id = os.environ['BOTID']
 
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO)
 
