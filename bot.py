@@ -91,8 +91,17 @@ def pauseGame(update, context):
         update.message.reply_text("STHU you ain't even playin...")
         return
 
+    if chat_id in games and not games[chat_id]["active"]:
+        update.message.reply_text("There's a paused game, /resume it and continue playing.")
+        return
+
+    # cancelling the word time out timer
+    if not free:
+        games[chat_id]["timer"].cancel()
+        
     # set game status to NOT active
     games[chat_id]["active"] = False
+
 
     # cancel game end timers 
     timers = games[chat_id]["gameEndTimers"]
@@ -100,20 +109,19 @@ def pauseGame(update, context):
         if(hasattr(item, 'cancel')):
             item.cancel()
 
-    # solving the word
-    context.bot.send_message(chat_id=update.effective_chat.id, text=f'The correct word is {games[chat_id]["correct"]}')
-    games[chat_id]["solved"] = True
-
-    # cancelling the word time out timer
-    if not free:
-        games[chat_id]["timer"].cancel()
-
     # note call setAndSendWord() on resume 
+    update.message.reply_text("Game paused. You can /resume playing whenever you're ready.")
 
 def resumeGame(update, context):
     chat_id = update.message.chat_id
     user = update.message.from_user
+    if chat_id not in games:
+        update.message.reply_text("There's no paused game")
+        return
     free = games[chat_id]["mode"] == "free"
+    
+    if chat_id in games and games[chat_id]["active"]:
+        update.message.reply_text("Your game session is not paused. You can /pause it, and /resume it later when you're ready.")
 
     # check if user is permitted to resume
     if user["id"] not in games[chat_id]["players"]:
@@ -123,9 +131,19 @@ def resumeGame(update, context):
     # change game status to active
     games[chat_id]["active"] = True
 
-    # call setAndSendWord(), that automatically sets the word time out timers
-    setAndSendWord(update, context, free)
-    
+    if games[chat_id]["solved"]:
+        # the timer has ended before pausing the game
+        # call setAndSendWord(), that automatically sets the word time out timers
+        setAndSendWord(update, context, free)
+    else:
+        # the timer hasn't ended at the time of pausing
+        # hence, we'll just send the word again and set a timeout timer
+        context.bot.send_message(chat_id=update.effective_chat.id, text=f"The word to solve is: \n{games[chat_id]['current']}")
+        if not free:
+            games[chat_id]["timer"] = threading.Timer(25.0, wordTimeOut, args=(update,context))
+            games[chat_id]["timer"].start()
+
+
     # set game end timers
     games[update.message.chat_id]["gameEndTimers"] = [
                 threading.Timer(60, sendEndTimer, args=(update,context,'two minutes',0)),
@@ -135,6 +153,8 @@ def resumeGame(update, context):
                 threading.Timer(10, gameEnder, args=(update,context, True)),
             ]
     games[chat_id]["gameEndTimers"][0].start()
+
+    update.message.reply_text("Resuming game...")
     
 
 
@@ -248,7 +268,7 @@ def startGame(update, context):
 
     elif chat_id in games and not games[chat_id]["active"]:
         update.message.reply_text("There's a paused game, /resume it and continue playing.")
-        
+
     elif chat_id in games and games[chat_id]["active"]:
         update.message.reply_text("A game is already active...")
 
