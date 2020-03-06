@@ -87,7 +87,7 @@ def pauseGame(update, context):
     if chat_id not in games:
         update.message.reply_text("There's no active game, start one with /startGame")
         return
-    if user["id"] not in games[chat_id]["players"] and not timer:
+    if user["id"] not in games[chat_id]["players"]:
         update.message.reply_text("STHU you ain't even playin...")
         return
 
@@ -116,7 +116,7 @@ def resumeGame(update, context):
     free = games[chat_id]["mode"] == "free"
 
     # check if user is permitted to resume
-    if user["id"] not in games[chat_id]["players"] and not timer:
+    if user["id"] not in games[chat_id]["players"]:
         update.message.reply_text("STHU you ain't even playin...")
         return
 
@@ -245,6 +245,13 @@ def startGame(update, context):
         # add whoever it's who started the game to players 
         games[chat_id]["players"][user['id']] = {"score":0, "data":user}
         gameStarter(update,context)
+
+    elif chat_id in games and not games[chat_id]["active"]:
+        update.message.reply_text("There's a paused game, /resume it and continue playing.")
+        
+    elif chat_id in games and games[chat_id]["active"]:
+        update.message.reply_text("A game is already active...")
+
 
 def startFreeGame(update, context):
     chat_id = update.message.chat_id
