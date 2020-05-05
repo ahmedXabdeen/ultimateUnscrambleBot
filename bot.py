@@ -66,9 +66,12 @@ def gameEnder(update, context, timer=False):
     if(len(players)):
         winner = players[0]
         if(winner[1]["score"] == 0):
-            message = "There's no winner\n\nplayers:\n"
+            message = "There's no winner"
+        elif len(players) > 1 and players[0]["score"] == players[1]["score"]:
+            message = "*It's a draw!*"
         else:
-            message = f'The Winner is [{winner[1]["data"]["first_name"]} {winner[1]["data"]["last_name"] or ""}](tg://user?id={winner[1]["data"]["id"]})\nscore: {winner[1]["score"]}\n\nPlayers:\n'
+            message = f'*The Winner is [{winner[1]["data"]["first_name"]} {winner[1]["data"]["last_name"] or ""}](tg://user?id={winner[1]["data"]["id"]})\nscore: {winner[1]["score"]}*'
+        message += '\n\nPlayers:\n'
         for item in players:
             message += f'{item[1]["data"]["first_name"]} {item[1]["data"]["last_name"] or ""}: {item[1]["score"]}\n'
 
@@ -168,14 +171,22 @@ def wordTimeOut(update, context, solve=False):
         context.bot.send_message(chat_id=update.effective_chat.id, text=f'The correct word is {games[chat_id]["correct"]}')
     return setAndSendWord(update, context, free=solve)
 
+def shuffle(word):
+    original = word
+    same = True
+    while(same):
+        random.shuffle(word)
+        word = "".join(word)
+        same = word == original
+    return word
+
+
 def setAndSendWord(update, context, free=False):
     chat_id = update.message.chat_id
     if games[chat_id]["solved"] and games[chat_id]["active"]:
         new_w = list(random.choice(words))
         games[chat_id]["correct"] = "".join(new_w)
-
-        random.shuffle(new_w)
-        games[chat_id]["current"] = "".join(new_w)
+        games[chat_id]["current"] = shuffle(new_w)
         context.bot.send_message(chat_id=update.effective_chat.id, text=f"The word to solve is: \n{games[chat_id]['current']}")
 
         games[chat_id]["solved"] = False
