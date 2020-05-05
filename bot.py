@@ -70,7 +70,7 @@ def gameEnder(update, context, timer=False):
         elif len(players) > 1 and players[0]["score"] == players[1]["score"]:
             message = "*It's a draw!*"
         else:
-            message = f'*The Winner is [{winner[1]["data"]["first_name"]} {winner[1]["data"]["last_name"] or ""}](tg://user?id={winner[1]["data"]["id"]})\nscore: {winner[1]["score"]}*'
+            message = f'*The Winner is [{winner[1]["data"]["first_name"]} {winner[1]["data"]["last_name"] or ""}](tg://user?id={winner[1]["data"]["id"]})*\nscore: {winner[1]["score"]}'
         message += '\n\nPlayers:\n'
         for item in players:
             message += f'{item[1]["data"]["first_name"]} {item[1]["data"]["last_name"] or ""}: {item[1]["score"]}\n'
