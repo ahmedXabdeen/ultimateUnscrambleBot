@@ -303,7 +303,7 @@ def startFreeGame(update, context):
 def solve(update, context):
     chat_id = update.message.chat_id
 
-    if chat_id in games and games[chat_id]["mode"] == "free":
+    if chat_id in games and (games[chat_id]["mode"] == "free" or len(games[chat_id]["players"]) == 1):
         wordTimeOut(update, context, solve=True)
 
 
