@@ -8,6 +8,22 @@ import os
 TOKEN = os.environ['TOKEN']
 bot_id = os.environ['BOTID']
 
+draw_gifs = [
+    "https://media.giphy.com/media/l0MYxttohtRUZkljy/giphy.gif",
+    "https://media.giphy.com/media/WPuqO61XdwqNO2nTr6/giphy.gif"
+]
+
+winner_gifs = [
+    "https://media1.giphy.com/media/JPsFUPp3vLS5q/giphy.gif?cid=549b592d64207b25e72da9abbcd9979343b9481ddc088d60&rid=giphy.gif",
+    "https://media.giphy.com/media/lfmYxOkGpNtEk/giphy.gif",
+    "https://media3.giphy.com/media/Jzxgefavt2aB2/giphy.gif",
+    "https://media.giphy.com/media/S6qkS0ETvel6EZat45/giphy.gif"
+]
+
+no_winner_gifs = [
+    "https://i.pinimg.com/originals/c3/93/24/c3932475a1a12d585d9f722adf0fb3b1.gif"
+]
+
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO)
 
 updater = Updater(token=TOKEN, use_context=True)
@@ -67,10 +83,13 @@ def gameEnder(update, context, timer=False):
     if(len(players)):
         winner = players[0]
         if(winner[1]["score"] == 0):
+            animation = list(random.choice(no_winner_gifs))
             message = "There's no winner"
         elif len(players) > 1 and players[0][1]["score"] == players[1][1]["score"]:
+            animation = list(random.choice(draw_gifs))
             message = "*It's a draw!*"
         else:
+            animation = list(random.choice(winner_gifs))
             message = f'*The Winner is* [{winner[1]["data"]["first_name"]} {winner[1]["data"]["last_name"] or ""}](tg://user?id={winner[1]["data"]["id"]})\nscore: {winner[1]["score"]}'
         message += '\n\nPlayers:\n'
         for item in players:
@@ -79,7 +98,7 @@ def gameEnder(update, context, timer=False):
         elapsed_time = time.time() - games[chat_id]["start_time"]
         duration = time.strftime("%H:%M:%S", time.gmtime(elapsed_time))
         message += f"\nGame duration: {duration}"
-        update.message.reply_markdown(message)
+        context.bot.send_animation(chat_id=chat_id, animation="".join(animation), caption=message, parse_mode='markdown')
     else:
         update.message.reply_text('What a shame! Nobody played in this game...')
     del games[chat_id]
