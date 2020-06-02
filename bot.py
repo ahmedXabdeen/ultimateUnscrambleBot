@@ -24,6 +24,23 @@ no_winner_gifs = [
     "https://i.pinimg.com/originals/c3/93/24/c3932475a1a12d585d9f722adf0fb3b1.gif"
 ]
 
+sad_gifs = [
+    'https://thumbs.gfycat.com/UltimateJoyfulAcornweevil-size_restricted.gif'
+]
+
+solved_msgs = [
+    'solved the word! 🥳🥳',
+    'is on fire today! 🥵🔥',
+    'is going places! 👏😮',
+    'was born to unscramble. 💯💯',
+    'is a walking vo·cab·u·lar·y 🤯',
+    'could do it in their sleep 😴',
+    'is a word whiz 🤓',
+    "is wiiiiiildin' 😤",
+    'knows it inside out 🙆🏽‍♂️',
+    'is in a class of their own 🙅🏽‍♂️'
+]
+
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO)
 
 updater = Updater(token=TOKEN, use_context=True)
@@ -82,14 +99,17 @@ def gameEnder(update, context, timer=False):
     players = [(k, v) for k, v in finalPlayers.items()]
     if(len(players)):
         winner = players[0]
-        if(winner[1]["score"] == 0):
-            animation = list(random.choice(no_winner_gifs))
+        if(winner[1]["score"] == 0 and len(players) > 1 and players[0][1]["score"] == players[1][1]["score"]):
+            animation = random.choice(no_winner_gifs)
             message = "There's no winner"
+        elif len(players) == 1 and winner[1]["score"] == 0:
+            message = 'What a shame! Nobody played in this game...'
+            animation = random.choice(sad_gifs)
         elif len(players) > 1 and players[0][1]["score"] == players[1][1]["score"]:
-            animation = list(random.choice(draw_gifs))
+            animation = random.choice(draw_gifs)
             message = "*It's a draw!*"
         else:
-            animation = list(random.choice(winner_gifs))
+            animation = random.choice(winner_gifs)
             message = f'*The Winner is* [{winner[1]["data"]["first_name"]} {winner[1]["data"]["last_name"] or ""}](tg://user?id={winner[1]["data"]["id"]})\nscore: {winner[1]["score"]}'
         message += '\n\nPlayers:\n'
         for item in players:
@@ -98,7 +118,7 @@ def gameEnder(update, context, timer=False):
         elapsed_time = time.time() - games[chat_id]["start_time"]
         duration = time.strftime("%H:%M:%S", time.gmtime(elapsed_time))
         message += f"\nGame duration: {duration}"
-        context.bot.send_animation(chat_id=chat_id, animation="".join(animation), caption=message, parse_mode='markdown')
+        context.bot.send_animation(chat_id=chat_id, animation=animation, caption=message, parse_mode='markdown')
     else:
         update.message.reply_text('What a shame! Nobody played in this game...')
     del games[chat_id]
@@ -193,6 +213,7 @@ def wordTimeOut(update, context, solve=False):
 
 def shuffle(word):
     original = word
+    word = list(word)
     same = True
     while(same):
         random.shuffle(word)
@@ -204,8 +225,8 @@ def shuffle(word):
 def setAndSendWord(update, context, free=False):
     chat_id = update.message.chat_id
     if games[chat_id]["solved"] and games[chat_id]["active"]:
-        new_w = list(random.choice(words))
-        games[chat_id]["correct"] = "".join(new_w)
+        new_w = random.choice(words)
+        games[chat_id]["correct"] = new_w
         games[chat_id]["current"] = shuffle(new_w)
         context.bot.send_message(chat_id=update.effective_chat.id, text=f"The word to solve is: \n{games[chat_id]['current']}")
 
@@ -235,7 +256,8 @@ def checkSolution(update, context):
             games[chat_id]["solved"] = True
             if not free:
                 games[chat_id]["timer"].cancel()
-            update.message.reply_markdown(f'[{user["first_name"]} {user["last_name"] or ""}](tg://user?id={user["id"]})  solved the word 🥳🥳')
+            celebrate_msg = random.choice(solved_msgs)
+            update.message.reply_markdown(f'[{user["first_name"]} {user["last_name"] or ""}](tg://user?id={user["id"]}) {celebrate_msg}')
             if user["id"] not in games[chat_id]["players"]:
                 games[chat_id]["players"][user['id']] = {"score":0, "data":user}
             games[chat_id]["players"][user["id"]]["score"] += 1
