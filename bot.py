@@ -99,10 +99,7 @@ def gameEnder(update, context, timer=False):
     players = [(k, v) for k, v in finalPlayers.items()]
     if(len(players)):
         winner = players[0]
-        if(winner[1]["score"] == 0 and len(players) > 1 and players[0][1]["score"] == players[1][1]["score"]):
-            animation = random.choice(no_winner_gifs)
-            message = "There's no winner"
-        elif len(players) == 1 and winner[1]["score"] == 0:
+        if len(players) == 1 and winner[1]["score"] == 0:
             message = 'What a shame! Nobody played in this game...'
             animation = random.choice(sad_gifs)
         elif len(players) > 1 and players[0][1]["score"] == players[1][1]["score"]:
