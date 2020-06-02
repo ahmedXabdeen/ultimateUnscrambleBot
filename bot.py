@@ -20,12 +20,12 @@ winner_gifs = [
     "https://media.giphy.com/media/S6qkS0ETvel6EZat45/giphy.gif"
 ]
 
-no_winner_gifs = [
-    "https://i.pinimg.com/originals/c3/93/24/c3932475a1a12d585d9f722adf0fb3b1.gif"
-]
-
 sad_gifs = [
-    'https://thumbs.gfycat.com/UltimateJoyfulAcornweevil-size_restricted.gif'
+    'https://thumbs.gfycat.com/UltimateJoyfulAcornweevil-size_restricted.gif',
+    "https://i.pinimg.com/originals/c3/93/24/c3932475a1a12d585d9f722adf0fb3b1.gif",
+    "https://media.tenor.com/images/14d979625a1bcb15854d362bdea00790/tenor.gif",
+    "https://media.tenor.com/images/9c4427af44ea18b12b0a2b029763c7fc/tenor.gif",
+    "https://media1.giphy.com/media/2ROSG9dnHbqyA/giphy.gif",
 ]
 
 solved_msgs = [
