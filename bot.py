@@ -210,9 +210,9 @@ def wordTimeOut(update, context, solve=False):
 
 def shuffle(word):
     original = word
-    word = list(word)
     same = True
     while(same):
+        word = list(word)
         random.shuffle(word)
         word = "".join(word)
         same = word == original
