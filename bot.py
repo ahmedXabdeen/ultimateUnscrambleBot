@@ -60,7 +60,6 @@ def start(update, context):
 def players(update, context):
     chat_id = update.message.chat_id
     if chat_id not in games:
-        update.message.reply_text("There's no active game, start one with /startGame")
         return
     players = games[chat_id]["players"]
     finalPlayers = {k: v for k, v in sorted(players.items(), key=lambda item: item[1]['score'], reverse=True)}
@@ -156,7 +155,7 @@ def resumeGame(update, context):
     chat_id = update.message.chat_id
     user = update.message.from_user
     if chat_id not in games:
-        update.message.reply_text("There's no paused game")
+        update.message.reply_text("There's no paused game, start one with /startGame")
         return
     free = games[chat_id]["mode"] == "free"
     
@@ -264,7 +263,6 @@ def extendGameTime(update, context):
     chat_id = update.message.chat_id
     user = update.message.from_user
     if chat_id not in games:
-        update.message.reply_text("There's no active game, start one with /startGame")
         return
     if user["id"] in games[chat_id]["players"]:
         timers = games[chat_id]["gameEndTimers"]
