@@ -50,7 +50,7 @@ games = {}
 
 words = []
 
-with open("words.txt") as f:
+with open("data.txt") as f:
     for w in f:
         words.append(w.strip())
 
